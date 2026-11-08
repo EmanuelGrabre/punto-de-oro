@@ -1,0 +1,149 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  ORGANIZER
+  PLAYER
+}
+
+enum TournamentStatus {
+  DRAFT        // borrador, no visible al público
+  REGISTRATION // inscripciones abiertas
+  IN_PROGRESS  // en juego
+  FINISHED     // terminado
+}
+
+enum CategoryPhase {
+  REGISTRATION
+  GROUPS
+  KNOCKOUT
+  FINISHED
+}
+
+enum TeamStatus {
+  PENDING
+  CONFIRMED
+  REJECTED
+}
+
+enum MatchStage {
+  GROUP
+  KNOCKOUT
+}
+
+enum MatchStatus {
+  PENDING
+  PLAYED
+  WALKOVER
+  BYE
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  phone        String?
+  passwordHash String
+  role         Role     @default(PLAYER)
+  createdAt    DateTime @default(now())
+
+  tournaments Tournament[]
+  teams       Team[]
+}
+
+model Tournament {
+  id          String           @id @default(cuid())
+  name        String
+  slug        String           @unique
+  description String?
+  location    String?
+  startDate   DateTime?
+  endDate     DateTime?
+  price       String?
+  status      TournamentStatus @default(DRAFT)
+  createdAt   DateTime         @default(now())
+  createdById String
+  createdBy   User             @relation(fields: [createdById], references: [id])
+
+  categories Category[]
+}
+
+model Category {
+  id                 String        @id @default(cuid())
+  tournamentId       String
+  tournament         Tournament    @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  name               String
+  maxTeams           Int?
+  groupSize          Int           @default(3)
+  qualifiersPerGroup Int           @default(2)
+  phase              CategoryPhase @default(REGISTRATION)
+  order              Int           @default(0)
+  createdAt          DateTime      @default(now())
+
+  teams   Team[]
+  groups  Group[]
+  matches Match[]
+}
+
+model Team {
+  id             String     @id @default(cuid())
+  categoryId     String
+  category       Category   @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  player1        String
+  player2        String
+  phone          String?
+  email          String?
+  notes          String?
+  seed           Int?
+  status         TeamStatus @default(PENDING)
+  registeredById String?
+  registeredBy   User?      @relation(fields: [registeredById], references: [id], onDelete: SetNull)
+  groupId        String?
+  group          Group?     @relation(fields: [groupId], references: [id], onDelete: SetNull)
+  createdAt      DateTime   @default(now())
+
+  matchesAsTeam1 Match[] @relation("team1")
+  matchesAsTeam2 Match[] @relation("team2")
+  matchesWon     Match[] @relation("winner")
+}
+
+model Group {
+  id         String   @id @default(cuid())
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  name       String
+  order      Int
+
+  teams   Team[]
+  matches Match[]
+}
+
+model Match {
+  id          String      @id @default(cuid())
+  categoryId  String
+  category    Category    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  stage       MatchStage
+  groupId     String?
+  group       Group?      @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  round       Int         @default(0) // eliminación: cantidad de parejas en la ronda (16 = octavos, 8 = cuartos, 2 = final)
+  position    Int         @default(0)
+  team1Id     String?
+  team1       Team?       @relation("team1", fields: [team1Id], references: [id], onDelete: SetNull)
+  team2Id     String?
+  team2       Team?       @relation("team2", fields: [team2Id], references: [id], onDelete: SetNull)
+  sets        Json?       // [[6,4],[3,6],[10,8]]
+  winnerId    String?
+  winner      Team?       @relation("winner", fields: [winnerId], references: [id], onDelete: SetNull)
+  status      MatchStatus @default(PENDING)
+  scheduledAt DateTime?
+  court       String?
+
+  @@index([categoryId, stage])
+}

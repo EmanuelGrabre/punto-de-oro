@@ -1,0 +1,60 @@
+@import "tailwindcss";
+
+@theme {
+  --color-court-50: #eef3ff;
+  --color-court-100: #dbe5ff;
+  --color-court-200: #b9cbff;
+  --color-court-500: #3b63e6;
+  --color-court-600: #2547d0;
+  --color-court-700: #1d37a8;
+  --color-court-800: #172b80;
+  --color-court-900: #0f1d57;
+  --color-court-950: #0a133a;
+  --color-ball: #d8f23a;
+  --color-ball-dark: #b9d41c;
+  --font-display: var(--font-barlow), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+}
+
+html { color-scheme: light; }
+body { background: #f5f7fb; color: #0f172a; }
+
+@utility container-page {
+  @apply mx-auto w-full max-w-6xl px-4 sm:px-6;
+}
+@utility card {
+  @apply rounded-2xl border border-slate-200 bg-white shadow-sm;
+}
+@utility btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50;
+}
+@utility btn-primary {
+  @apply btn bg-court-600 text-white hover:bg-court-700;
+}
+@utility btn-ball {
+  @apply btn bg-ball text-court-950 hover:bg-ball-dark;
+}
+@utility btn-ghost {
+  @apply btn border border-slate-300 bg-white text-slate-700 hover:bg-slate-50;
+}
+@utility btn-danger {
+  @apply btn border border-red-200 bg-white text-red-700 hover:bg-red-50;
+}
+@utility btn-sm {
+  @apply px-3 py-1.5 text-xs rounded-lg;
+}
+@utility input {
+  @apply w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-court-500 focus:ring-4 focus:ring-court-100;
+}
+@utility label {
+  @apply mb-1.5 block text-sm font-medium text-slate-700;
+}
+@utility h-display {
+  @apply font-display font-bold uppercase tracking-tight;
+}
+@utility badge {
+  @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold;
+}
+@utility tab {
+  @apply rounded-full px-4 py-2 text-sm font-semibold whitespace-nowrap transition;
+}
